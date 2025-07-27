@@ -1,5 +1,5 @@
 matplotlib==3.8.0
-numpy==2.3.2
+numpy==1.26.0
 opencv_contrib_python==4.9.0.80
 pandas==2.3.1
 Pillow==11.3.0
