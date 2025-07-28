@@ -91,7 +91,7 @@ def home():
     st.subheader("Algorithm Characteristics")
     col1, col2 = st.columns(2)
     dct_path = os.path.join("assets", "DCT.png")
-    dct_path = os.path.join("assets", "DWT.png")
+    dwt_path = os.path.join("assets", "DWT.png")
     with col1:
         st.image(dct_path, caption="DCT Block Processing", width=400)
     with col2:
