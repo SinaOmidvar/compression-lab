@@ -16,7 +16,8 @@ st.set_page_config(
 )
 
 # Import CSS file
-with open("assets\style.css") as f:
+css_path = os.path.join("assets", "style.css")
+with open(css_path) as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Session state initialization
@@ -89,12 +90,12 @@ def home():
     # Algorithm comparison
     st.subheader("Algorithm Characteristics")
     col1, col2 = st.columns(2)
+    dct_path = os.path.join("assets", "DCT.png")
+    dct_path = os.path.join("assets", "DWT.png")
     with col1:
-        st.image("assets\DCT.png", 
-                caption="DCT Block Processing", width=400)
+        st.image(dct_path, caption="DCT Block Processing", width=400)
     with col2:
-        st.image("assets\DWT.png", 
-                caption="DWT Decomposition", width=400)
+        st.image(dwt_path, caption="DWT Decomposition", width=400)
     
     
     st.markdown("""
@@ -475,8 +476,9 @@ def compression():
                 # Save compressed image    
                 compressed_rgb = imgcodecs.ycc2rgb(compressed_ycc)
                 st.session_state.compressed_img = compressed_rgb
-                Image.fromarray(compressed_rgb).save('assets\\temp.jpg')
-                size_in_bytes = os.path.getsize('assets\\temp.jpg')
+                temp_path = os.path.join("assets", "temp.jpg")
+                Image.fromarray(compressed_rgb).save(temp_path)
+                size_in_bytes = os.path.getsize(temp_path)
                 st.session_state.compressed_size = round(size_in_bytes/1024, 2)
                 
                 # Display results
