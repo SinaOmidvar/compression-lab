@@ -89,7 +89,7 @@ def depict(ycc_img, chan='Y', mode='Square', wavelet='db1', level=2, cmap='bone'
             if current_level == 0:
                 # Plot approximation coefficients
                 cA = coeffs[0]
-                if cmap == "Blues":
+                if cmap in ["Blues", "Greys"]:
                     ax_top_left.imshow(1 - cA, cmap=cmap)
                 else:
                     ax_top_left.imshow(cA, cmap=cmap)
@@ -108,7 +108,7 @@ def depict(ycc_img, chan='Y', mode='Square', wavelet='db1', level=2, cmap='bone'
             if next_coeffs is not None:
                 plot_level(a_ax, q_size, [cA] + coeffs[2:], current_level-1)
             else:
-                if cmap == "Blues":
+                if cmap in ["Blues", "Greys"]:
                     a_ax.imshow(1 - cA, cmap=cmap)
                 else:
                     a_ax.imshow(cA, cmap=cmap)

@@ -3,6 +3,7 @@ from streamlit_image_comparison import image_comparison
 from PIL import Image
 import imgcodecs
 import coeffs_plot
+from haar_psi import haar_psi, visualize_haarpsi_maps
 import os
 import pandas as pd
 import plotly.express as px
@@ -65,15 +66,7 @@ def upload_preview():
 # Home Page
 def home():
     st.title("Advanced Image Compression Laboratory")
-    st.markdown('<div class="header">Scientific Platform for Compression Research</div>', unsafe_allow_html=True)
-    
-    st.write("""
-    This platform enables rigorous comparison of DCT and DWT compression techniques with:
-    - Interactive parameter controls
-    - Real-time performance metrics
-    - Advanced visualization tools
-    - Research documentation space
-    """)
+    st.subheader("Scientific Platform for Compression Research")
     
     # Quick start guide
     with st.expander("Getting Started Guide"):
@@ -217,7 +210,7 @@ def home():
     \begin{aligned}
     &\color{skyblue}\textbf{Size Reduction} \\
     &\text{Formula: } \\
-    &\text{Reduction} = \left(1 - \frac{\text{Compressed Size}}{\text{Original Size}}\right) \times 100 \\
+    &\text{SR} = \left(1 - \frac{\text{Compressed Size}}{\text{Original Size}}\right) \times 100 \\
     &\text{Range: } [0, 100]\% \\
     &\color{teal}\textbf{Pros:} \\
     &\quad \bullet \text{ Intuitive percentage format} \\
@@ -284,7 +277,9 @@ def plot_history():
         hovermode="x unified",
         xaxis={'categoryorder': 'array', 'categoryarray': df['Run']},
         uniformtext_minsize=8,
-        uniformtext_mode='hide'
+        uniformtext_mode='hide',
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -296,10 +291,7 @@ def plot_history():
 # Analysis Toolkit Page
 def toolkit():
     st.title("Analysis Toolkit")
-    st.markdown('<div class="header">Result Comparison and Research Notebook</div>', unsafe_allow_html=True)
-    
-    # Compression history
-    st.subheader("Compression History")
+    st.subheader("Result Comparison and Research Notebook")
     if st.session_state.compression_history:
         with st.container(height=512):
             for i, run in enumerate(st.session_state.compression_history):
@@ -335,13 +327,12 @@ def toolkit():
 # Wavelet Explorer Page
 def explorer():
     st.title("Wavelet Coefficient Explorer")
-    st.markdown('<div class="header">Multi-resolution Analysis Visualization</div>', unsafe_allow_html=True)
-    
+    st.subheader("Multi-resolution Analysis Visualization")
     upload_preview()
     
     if st.session_state.original_img is not None:
         # Parameters
-        st.sidebar.subheader("Visualization Parameters")
+        st.sidebar.header("Visualization Parameters")
         wavelet = st.sidebar.selectbox("Wavelet Type", 
                                        ["db1", "db2", "db4", "haar", "bior2.2"])
         levels = st.sidebar.slider("Decomposition Levels", 1, 4, 2)
@@ -372,13 +363,13 @@ def explorer():
 # Compression Page
 def compression():
     st.title("Compression Analysis")
-    st.markdown('<div class="header">Block-based and Wavelet-based Frequency Domain Compression</div>', unsafe_allow_html=True)
-    
+    st.subheader("Block-based and Wavelet-based Frequency Domain Compression")
+
     upload_preview()
     
     if st.session_state.original_img is not None:
         # Parameters
-        st.sidebar.subheader("Algorithm Parameters")
+        st.sidebar.header("Algorithm Parameters")
         algo = st.sidebar.selectbox("Compression Algorithm", ['DCT', 'DWT'])
         
         options = ["4:4:4", "4:2:2", "4:2:0"]
@@ -536,13 +527,78 @@ def compression():
                 
                 metric_cols = st.columns(3)
                 metric_cols[0].metric("NMI", f"{metrics['NMI']}", delta=deltas[3])
-                metric_cols[1].metric("Compression Ratio", f"{comp_ratio:.2f}:1", delta=deltas[4])
-                metric_cols[2].metric("Size Reduction", f"{size_reduction:.2f}%", delta=deltas[5])
-                
+                metric_cols[1].metric("CR", f"{comp_ratio:.2f}:1", delta=deltas[4])
+                metric_cols[2].metric("SR", f"{size_reduction:.2f}%", delta=deltas[5])
+
+# HaarPSI Page
+def haarpsi():
+    st.title("HaarPsi Quality Metric")
+    st.subheader("A Haar Wavelet-based Perceptual Similarity Index")
+    st.divider()
+    
+    if st.session_state.compressed_img is not None:
+        # Display results
+        with st.container(key="sidebyside"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(st.session_state.original_img,
+                        caption=f"Original Size: {st.session_state.original_size} KB")
+            with col2:
+                st.image(st.session_state.compressed_img,
+                        caption=f"Compressed Size: {st.session_state.compressed_size} KB")
+        
+        ref = imgcodecs.rgb2ycc(st.session_state.original_img)[:,:,0]
+        dist = imgcodecs.rgb2ycc(st.session_state.compressed_img)[:,:,0]
+        
+        # Similarity Score
+        similarity, local_similarities, weights = haar_psi(ref, dist)
+        _, middle, _ = st.columns(3)
+        middle.metric("HaarPsi", similarity)
+        
+        # Display maps
+        fig = visualize_haarpsi_maps(local_similarities, weights)
+        st.pyplot(fig)
+        
+        st.divider()
+        
+        st.markdown(r"""
+        $$
+        \begin{aligned}
+        &\color{skyblue}\textbf{HaarPSI (Haar Wavelet-Based Perceptual Similarity Index)} \\
+        &\text{Formula: } \\
+        &\text{HaarPSI} = \frac{\sum_{s} \sum_{(x,y)} w^s(x,y) \cdot \sigma(S^s(x,y))}{\sum_{s} \sum_{(x,y)} w^s(x,y)} \\
+        &\text{where:} \\
+        &\quad S^s(x,y) = \frac{2|W_R^s||W_D^s| + C}{|W_R^s|^2 + |W_D^s|^2 + C}
+        &\quad \text{(Similarity at scale } s) \\
+        &\quad w^s(x,y) = \max(|W_R^s|, |W_D^s|)
+        &\quad \text{(Edge weights)} \\
+        &\quad \sigma(x) = \frac{1}{1+e^{-\alpha x}}
+        &\quad \text{(Sigmoid scaling, } \alpha=4.2) \\
+        &\text{Range: } [0, 1] \text{ (1 = perfect match)} \\
+        &\color{teal}\textbf{Pros:} \\
+        &\quad \bullet \text{ Multi-scale edge analysis (Haar wavelets)} \\
+        &\quad \bullet \text{ Robust to small misalignments} \\
+        &\quad \bullet \text{ Focuses on perceptually relevant features} \\
+        &\color{brown}\textbf{Cons:} \\
+        &\quad \bullet \text{ Computationally intensive vs SSIM} \\
+        &\quad \bullet \text{ Requires tuning of } C \text{ and } \alpha \\
+        &\quad \bullet \text{ Less sensitive to smooth intensity changes}
+        \end{aligned}
+        $$
+        """)
+
+    else:
+        st.warning(' No records found.', icon="⚠️")
+        st.info(' Please upload an image to begin compression.', icon="ℹ️")
+            
 # Sidebar navigation
 st.sidebar.title("Compression Laboratory")
-pages = ["Home", "Compression", "Wavelet Explorer", "Analysis Toolkit"]
-page = st.sidebar.selectbox("Navigation", pages, key='selbox')
+pages = ["Home", "Compression", "Analysis Toolkit", "Wavelet Explorer", "HaarPSI"]
+# page = st.sidebar.selectbox("Navigation", pages, key='selbox')
+page = st.sidebar.segmented_control("Navigation", pages, selection_mode="single",
+                                    default="Home", key='selbox')
+
+st.sidebar.divider()
 
 # Home Page
 if page == "Home":
@@ -551,14 +607,20 @@ if page == "Home":
 # DCT Compression Page
 elif page == "Compression":
     compression()
-              
+
+# Analysis Toolkit
+elif page == "Analysis Toolkit":
+    toolkit()
+
 # Wavelet Explorer Page
 elif page == "Wavelet Explorer":
     explorer()
                 
-# Analysis Toolkit
-elif page == "Analysis Toolkit":
-    toolkit()
+elif page == "HaarPSI":
+    haarpsi()
+
+else:
+    home()
     
 # Run the app
 if __name__ == "__main__":

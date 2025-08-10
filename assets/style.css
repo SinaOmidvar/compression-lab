@@ -6,28 +6,48 @@ table{
     text-align: center;
 }
 table th {
-    background-color: #1e3054;
+    background-color: #0b2945;
     color: white;
     font-weight: 600;
     letter-spacing: 0.5px;
+
 }
-/* custom header */
-.header {
-    color: #ff4b4b;
+/* headers */
+h3 {
+    font-size: x-large !important;
+    color: #ffb88c !important;
 }
+/* json */
+div[class="react-json-view"]{
+    background-color: #fafafa00 !important;
+}
+
 /* Side bar */
 section[data-testid="stSidebar"] {
     width: 400px !important;
-    background-color: #18243d;
+    border-right: 1px solid #ffffff81;
+    /* background-color: #18243d; */
+    background: linear-gradient(
+        +45deg,  /* Diagonal flow for modern feel */
+        #0f1727 0%, 
+        #0b2945 60%, 
+        #18343d 80%
+      );
+      background-size: 300% 300%;
+      animation: gradientShift 5s ease infinite;
 }
 /* Select Box */
 div[data-baseweb="select"] > div:first-child {
-    border: 1px solid #fafafa !important;
-    color: #ff4b4b;
+    border: 1px solid #fafafa81 !important;
+    background-color: #0b2945;
+    color: #ffb88c;
+}
+ul[data-testid="stSelectboxVirtualDropdown"] {
+    background-color: #0b2945;
 }
 /* Metric */
 div[data-testid="stMetric"]{
-    border: 1px solid #fafafa !important;
+    border: 1px solid #fafafa81 !important;
     border-radius: 25px;
     padding: 25px;
     display: grid;
@@ -47,12 +67,25 @@ label[data-testid="stMetricLabel"] p {
 }
 /* File Uploader */
 section[data-testid="stFileUploaderDropzone"]{
-    background-color: #18243d;
-    border: 1px solid #fafafa !important;
+    background-color: #0b2945;
+    border: 1px solid #fafafa81 !important;
 }
 /* Main page */
 section[data-testid="stMain"] {
-    background-color: #0f1727 !important;
+    /* background-color: #0f1727 !important; */
+    background: linear-gradient(
+        -45deg,  /* Diagonal flow for modern feel */
+        #18343d 0%, 
+        #0b2945 40%, 
+        #0f1727 90%
+      );
+      background-size: 300% 300%;
+      animation: gradientShift 5s ease infinite;
+}
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 /* transparent header */
 Header{
@@ -63,10 +96,14 @@ div[data-testid="stToolbar"]{
 }
 /* text area */
 .st-key-textarea textarea{
-    background-color: #18243d;
+    background-color: #0b2945;
 }
 /* buttons */
 Button{
-    border: 1px solid #fafafa !important;
-    background-color: #121212 !important;
+    border: 1px solid #fafafa81 !important;
+    background-color: #0b2945 !important;
+}
+.st-key-selbox Button{
+    border-radius: 10px !important;
+    margin: 5px;
 }
