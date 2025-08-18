@@ -24,7 +24,7 @@ div[class="react-json-view"]{
 
 /* Side bar */
 section[data-testid="stSidebar"] {
-    width: 400px !important;
+    width: 380px !important;
     border-right: 1px solid #ffffff81;
     /* background-color: #18243d; */
     background: linear-gradient(
@@ -102,8 +102,4 @@ div[data-testid="stToolbar"]{
 Button{
     border: 1px solid #fafafa81 !important;
     background-color: #0b2945 !important;
-}
-.st-key-selbox Button{
-    border-radius: 10px !important;
-    margin: 5px;
 }

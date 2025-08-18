@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_image_comparison import image_comparison
+from streamlit_option_menu import option_menu
 from PIL import Image
 import imgcodecs
 import coeffs_plot
@@ -46,15 +47,15 @@ def upload_preview():
             st.session_state.original_img = img
             
         st.session_state.original_size = round(uploaded_file.size/1024, 2)
-        with st.expander("📸 Uploaded Image"):
+        with st.expander("Uploaded Image"):
             col1, col2, col3 = st.columns(3)
                 
             with col1:
-                st.write("👀 **Visual Preview**")
+                st.write("**Visual Preview**")
                 st.image(img, caption="Original Image", width=256)
             
             with col2:
-                st.write("📊 **Image Metadata**")
+                st.write("**Image Metadata**")
                 st.json({
                     "Filename": uploaded_file.name,
                     "Size": f"{img.size[0]} × {img.size[1]}",
@@ -285,7 +286,7 @@ def plot_history():
     st.plotly_chart(fig, use_container_width=True)
 
     # Raw data display
-    with st.expander("📊 View Raw Data"):
+    with st.expander("View Raw Data"):
         st.dataframe(df, use_container_width=True, hide_index=True)
 
 # Analysis Toolkit Page
@@ -370,7 +371,7 @@ def compression():
     if st.session_state.original_img is not None:
         # Parameters
         st.sidebar.header("Algorithm Parameters")
-        algo = st.sidebar.selectbox("Compression Algorithm", ['DCT', 'DWT'])
+        algo = st.sidebar.radio("Compression Algorithm", ['DCT', 'DWT'], horizontal=True)
         
         options = ["4:4:4", "4:2:2", "4:2:0"]
         lum_ratio = st.sidebar.pills("Luminance Ratio", options, selection_mode="single", default="4:4:4")
@@ -378,9 +379,9 @@ def compression():
 
         if algo == 'DCT':
             quality = st.sidebar.slider("Quality Factor", 0, 100, 85, 5, key="dct_quality")
-            block_size = st.sidebar.selectbox("Block Size", [4, 8, 16], index=1, key="dct_block")
+            block_size = st.sidebar.radio("Block Size", [4, 8, 16], index=1, horizontal=True)
             with st.sidebar.expander("Advanced Options"):
-                dct_norm = st.radio("DCT Normalization", ["ortho", "None"])
+                dct_norm = st.radio("DCT Normalization", ["ortho", "None"], horizontal=True)
                 padding_mode = st.selectbox("Padding Mode", ["reflect", "edge", "constant"])        
             
         elif algo == 'DWT':
@@ -389,8 +390,9 @@ def compression():
             levels = st.sidebar.slider("Decomposition Levels", 1, 4, 2)
 
             if method == "Threshold":
+                threshold_mode = st.sidebar.radio("Threshold Mode", ["soft", "hard"], horizontal=True)
                 threshold = st.sidebar.slider("Threshold Value", 0, 100, 30, 5)
-                threshold_mode = st.sidebar.selectbox("Threshold Mode", ["soft", "hard"])
+
             else:
                 quant_step = st.sidebar.slider("Quantization Step", 0, 100, 20, 5)
         
@@ -405,8 +407,8 @@ def compression():
                         imgcodecs.rgb2ycc(st.session_state.original_img),
                         lum_ratio=lum_ratio,
                         chr_ratio=chroma_ratio,
-                        block_h=block_size,
-                        block_w=block_size,
+                        block_h=8,
+                        block_w=8,
                         quality=quality
                     )
                     st.session_state.compression_history.append({
@@ -593,10 +595,21 @@ def haarpsi():
             
 # Sidebar navigation
 st.sidebar.title("Compression Laboratory")
-pages = ["Home", "Compression", "Analysis Toolkit", "Wavelet Explorer", "HaarPSI"]
-# page = st.sidebar.selectbox("Navigation", pages, key='selbox')
-page = st.sidebar.segmented_control("Navigation", pages, selection_mode="single",
-                                    default="Home", key='selbox')
+page = option_menu(
+    menu_title=None,
+    options=["Home", "Compression", "Analysis Toolkit", "Wavelet Explorer", "HaarPSI"],
+    icons=["house", "file-earmark-zip", "graph-up", "search", "square-half"],
+    orientation='horizontal',
+    styles={
+        "container": {"padding": "10px!important", "background-color": "#0b2945",
+                      "border": "2px solid #fafafa72", "border-radius": "5px"},
+        "icon": {"font-size": "20px"}, 
+        "nav-link": {"font-family": "sans-serif", "font-size": "15px", "text-align": "center",
+                     "padding": "0.5rem 0.5rem", "white-space": "nowrap",},
+        "nav-link-selected": {"font-weight": "normal", "padding": "0.5rem 0.5rem", "color": "#000",
+        },
+    }
+)
 
 st.sidebar.divider()
 
